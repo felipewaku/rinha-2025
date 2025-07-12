@@ -1,45 +1,66 @@
 package com.example.com
 
-import com.mongodb.kotlin.client.coroutine.MongoClient
-import dev.inmo.krontab.builder.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.managers.lock.database.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.managers.lock.redis.*
+import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.requestvalidation.RequestValidation
-import io.ktor.server.plugins.requestvalidation.ValidationResult
-import io.ktor.server.resources.*
+import io.ktor.server.request.receive
+import io.ktor.server.resources.Resources
+import io.ktor.server.resources.get
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.routing.routing
+import io.ktor.server.routing.post
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.koin.dsl.module
-import org.koin.ktor.plugin.Koin
-import org.koin.logger.slf4jLogger
+
 
 fun Application.configureRouting() {
     install(Resources)
-    install(RequestValidation) {
-        validate<String> { bodyText ->
-            if (!bodyText.startsWith("Hello"))
-                ValidationResult.Invalid("Body text should start with 'Hello'")
-            else ValidationResult.Valid
-        }
-    }
+
     routing {
-        get<Articles> { article ->
-            // Get all articles ...
-            call.respond("List of articles sorted starting from ${article.sort}")
+        post("/payments") {
+            val body = call.receive<PaymentsRequestBody>()
+            call.respondNullable(HttpStatusCode.OK)
         }
-        get("/") {
-            call.respondText("Hello World!")
+
+        get<GetPaymentsSummary> { params ->
+            call.respond(
+                PaymentsSummary(
+                    PaymentProcessorSummary(0.0f, 0.0f),
+                    PaymentProcessorSummary(0.0f, 0.0f)
+                )
+            )
+        }
+
+        get<GetPayments> {
+            call.respond(listOf(Payment("", 0.0f)))
         }
     }
 }
+
 @Serializable
-@Resource("/articles")
-class Articles(val sort: String? = "new")
+class PaymentsRequestBody(val correlationId: String, val amount: Float)
+
+@Serializable
+@Resource("/payments-summary")
+class GetPaymentsSummary(val from: String? = null, val to: String? = null)
+
+@Serializable
+@Resource("/payments")
+class GetPayments()
+
+@Serializable
+class PaymentProcessorSummary(
+    val totalRequests: Float,
+    val totalAmount: Float,
+)
+
+@Serializable
+class PaymentsSummary(
+    val default: PaymentProcessorSummary,
+    val fallback: PaymentProcessorSummary,
+)
+
+@Serializable
+class Payment(
+    val correlationId: String,
+    val amount: Float
+)

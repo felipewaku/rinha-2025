@@ -10,28 +10,29 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.routing
 import io.ktor.server.routing.post
 import kotlinx.serialization.Serializable
+import org.koin.ktor.ext.inject
 
 
 fun Application.configureRouting() {
     install(Resources)
 
+    val service by inject<PaymentProcessorService>()
+
     routing {
         post("/payments") {
             val body = call.receive<PaymentsRequestBody>()
+            service.enqueuePayment()
             call.respondNullable(HttpStatusCode.OK)
         }
 
         get<GetPaymentsSummary> { params ->
-            call.respond(
-                PaymentsSummary(
-                    PaymentProcessorSummary(0.0f, 0.0f),
-                    PaymentProcessorSummary(0.0f, 0.0f)
-                )
-            )
+            val summary = service.getPaymentSummary()
+            call.respond(summary)
         }
 
         get<GetPayments> {
-            call.respond(listOf(Payment("", 0.0f)))
+            val payments = service.listPayments()
+            call.respond(payments)
         }
     }
 }
@@ -46,21 +47,3 @@ class GetPaymentsSummary(val from: String? = null, val to: String? = null)
 @Serializable
 @Resource("/payments")
 class GetPayments()
-
-@Serializable
-class PaymentProcessorSummary(
-    val totalRequests: Float,
-    val totalAmount: Float,
-)
-
-@Serializable
-class PaymentsSummary(
-    val default: PaymentProcessorSummary,
-    val fallback: PaymentProcessorSummary,
-)
-
-@Serializable
-class Payment(
-    val correlationId: String,
-    val amount: Float
-)

@@ -68,6 +68,13 @@ services:
     ports:
       - 54322:5432
 
+  redis:
+    image: redis:8.0.3-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    
+
 networks:
   payment-processor:
     name: payment-processor

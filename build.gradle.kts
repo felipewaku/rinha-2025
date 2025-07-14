@@ -22,6 +22,9 @@ repositories {
 }
 
 dependencies {
+    implementation("io.netty:netty-resolver-dns-native-macos:4.1.107.Final:osx-aarch_64")
+    implementation("io.micrometer:micrometer-core:1.15.1")
+    implementation("io.lettuce:lettuce-core:6.7.0.RELEASE")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-server-core")

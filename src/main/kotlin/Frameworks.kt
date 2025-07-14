@@ -1,35 +1,38 @@
 package com.example.com
 
-import com.mongodb.kotlin.client.coroutine.MongoClient
-import dev.inmo.krontab.builder.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.managers.lock.database.*
-import io.github.flaxoos.ktor.server.plugins.taskscheduling.managers.lock.redis.*
-import io.ktor.resources.*
-import io.ktor.serialization.kotlinx.json.*
+
 import io.ktor.server.application.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.requestvalidation.RequestValidation
-import io.ktor.server.plugins.requestvalidation.ValidationResult
-import io.ktor.server.resources.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import io.lettuce.core.*;
+import io.lettuce.core.api.StatefulRedisConnection
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
+import org.koin.ktor.ext.inject
 
 fun Application.configureFrameworks() {
     install(Koin) {
         slf4jLogger()
         modules(module {
-            single<HelloService> {
-                HelloService {
-                    println(environment.log.info("Hello, World!"))
-                }
+            single<RedisClient> {
+                RedisClient.create("redis://0.0.0.0:6379/0")
             }
+            single<StatefulRedisConnection<String, String>> {
+                get<RedisClient>().connect()
+            }
+            singleOf(::PaymentProcessorServiceImpl) bind PaymentProcessorService::class
+
         })
     }
+
+
+    environment.monitor.subscribe(ApplicationStopped) {
+        val redisConnection by inject<StatefulRedisConnection<String, String>>()
+        val redisClient by inject<RedisClient>()
+
+        redisConnection.close()
+        redisClient.shutdown()
+    }
 }
+

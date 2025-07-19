@@ -1,16 +1,19 @@
 package com.example.com
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 interface PaymentProcessorService {
-    suspend fun getPaymentSummary(): PaymentsSummary
-    suspend fun enqueuePayment()
+    suspend fun getPaymentSummary(from: Instant?, to: Instant?): PaymentsSummary
+    suspend fun enqueuePayment(correlationId: String, amount: Float)
+    suspend fun processPayment(payment: ProcessPayment)
     suspend fun listPayments(): List<Payment>
 }
 
+
 @Serializable
 data class PaymentProcessorSummary(
-    val totalRequests: Float,
+    val totalRequests: Int,
     val totalAmount: Float,
 )
 
@@ -23,5 +26,18 @@ data class PaymentsSummary(
 @Serializable
 data class Payment(
     val correlationId: String,
-    val amount: Float
+    val amount: Float,
+    val requestedAt: Instant
+)
+
+enum class PaymentProcessor {
+    DEFAULT, FALLBACK
+}
+
+@Serializable
+data class ProcessPayment(
+    val correlationId: String,
+    val amount: Float,
+    val requestedAt: Instant,
+    val paymentProcessor: PaymentProcessor
 )

@@ -1,4 +1,4 @@
-package com.example.com
+package dev.felipewaku.rinha2025
 
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import dev.inmo.krontab.builder.*

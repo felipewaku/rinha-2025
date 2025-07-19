@@ -1,4 +1,4 @@
-package com.example.com
+package dev.felipewaku.rinha2025
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

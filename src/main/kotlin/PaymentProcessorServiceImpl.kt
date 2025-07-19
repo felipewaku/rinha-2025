@@ -1,4 +1,4 @@
-package com.example.com
+package dev.felipewaku.rinha2025
 
 import io.lettuce.core.ExperimentalLettuceCoroutinesApi
 import io.lettuce.core.Range

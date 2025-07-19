@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
 }
 
-group = "com.example.com"
+group = "dev.felipewaku.rinha2025"
 version = "0.0.1"
 
 application {

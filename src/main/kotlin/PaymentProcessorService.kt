@@ -1,4 +1,4 @@
-package com.example.com
+package dev.felipewaku.rinha2025
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

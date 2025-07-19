@@ -1,4 +1,4 @@
-package com.example.com
+package dev.felipewaku.rinha2025
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*

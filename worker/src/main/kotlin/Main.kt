@@ -2,12 +2,77 @@ package dev.felipewaku.rinha2025.worker
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.lettuce.core.ExperimentalLettuceCoroutinesApi
+import io.lettuce.core.RedisClient
+import io.lettuce.core.api.coroutines
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.util.logging.Logger
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+private const val REDIS_PAYMENT_QUEUE = "payment_main_queue"
+private const val REDIS_PAYMENTS_DEFAULT_KEY = "payments_default"
+private const val REDIS_PAYMENTS_FALLBACK_KEY = "payments_fallback"
+
+@Serializable
+data class Payment(
+    val correlationId: String, val amount: Float, val requestedAt: String
+)
+
+@OptIn(ExperimentalLettuceCoroutinesApi::class, ExperimentalTime::class)
 suspend fun main() {
+
+    val logger = Logger.getLogger("Worker")
+
+    val redisClient = RedisClient.create("redis://0.0.0.0:6379/0")
+    val connection = redisClient.connect()
+    val redis = connection.coroutines()
+
     val client = HttpClient(CIO)
-    val response: HttpResponse = client.get("https://ktor.io/")
-    println(response.status)
-    client.close()
+
+    Runtime.getRuntime().addShutdownHook(Thread {
+        logger.info("Shutting down...")
+        client.close()
+        connection.close()
+        redisClient.shutdown()
+    })
+
+    while (true) {
+        val payment = redis.lpop(REDIS_PAYMENT_QUEUE)
+        if (payment == null) {
+            logger.info("No payments in queue, waiting 500ms...")
+            Thread.sleep(500)
+            continue
+        }
+
+        val paymentData = Json.decodeFromString<Payment>(payment)
+
+        val response: HttpResponse = client.post("http://0.0.0.0:8001/payments") {
+            contentType(ContentType.Application.Json)
+            setBody(payment)
+        }
+
+        if (response.status != HttpStatusCode.OK) {
+            logger.info("Error in payment: ${paymentData.correlationId} with DEFAULT")
+            redis.lpush(REDIS_PAYMENT_QUEUE, payment)
+            continue
+        } else {
+            logger.info("Integrated payment ${paymentData.correlationId} with DEFAULT")
+
+            val date = Instant.parse(paymentData.requestedAt)
+
+            redis.zadd(
+                REDIS_PAYMENTS_DEFAULT_KEY, date.toEpochMilliseconds().toDouble(), payment
+            )
+        }
+
+    }
+
 }

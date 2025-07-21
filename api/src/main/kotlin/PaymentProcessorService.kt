@@ -26,7 +26,7 @@ data class PaymentsSummary(
 @Serializable
 data class Payment(
     val correlationId: String,
-    val amount: Float,
+    val amount: Int,
     val requestedAt: Instant
 )
 

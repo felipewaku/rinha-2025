@@ -12,8 +12,10 @@ import io.lettuce.core.ExperimentalLettuceCoroutinesApi
 import io.lettuce.core.RedisClient
 import io.lettuce.core.api.coroutines
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.logging.Logger
+import kotlin.math.round
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -23,15 +25,27 @@ private const val REDIS_PAYMENTS_FALLBACK_KEY = "payments_fallback"
 
 @Serializable
 data class Payment(
+    val correlationId: String, val amount: Int, val requestedAt: String
+)
+
+@Serializable
+data class PaymentRequestBody(
     val correlationId: String, val amount: Float, val requestedAt: String
 )
+
 
 @OptIn(ExperimentalLettuceCoroutinesApi::class, ExperimentalTime::class)
 suspend fun main() {
 
     val logger = Logger.getLogger("Worker")
 
-    val redisClient = RedisClient.create("redis://0.0.0.0:6379/0")
+    val redisUrl = "redis://redis:6379/0"
+    val paymentUrl = "http://payment-processor-default:8080/payments"
+
+//    val redisUrl = "redis://localhost:6379/0"
+//    val paymentUrl = "http://localhost:8001/payments"
+
+    val redisClient = RedisClient.create(redisUrl)
     val connection = redisClient.connect()
     val redis = connection.coroutines()
 
@@ -54,9 +68,16 @@ suspend fun main() {
 
         val paymentData = Json.decodeFromString<Payment>(payment)
 
-        val response: HttpResponse = client.post("http://0.0.0.0:8001/payments") {
+
+        val response: HttpResponse = client.post(paymentUrl) {
             contentType(ContentType.Application.Json)
-            setBody(payment)
+            setBody(
+                Json.encodeToString(PaymentRequestBody(
+                    paymentData.correlationId,
+                    round(paymentData.amount.toFloat() / 100.0).toFloat(),
+                    paymentData.requestedAt
+                ))
+            )
         }
 
         if (response.status != HttpStatusCode.OK) {

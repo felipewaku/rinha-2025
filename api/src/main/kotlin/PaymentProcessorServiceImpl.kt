@@ -10,6 +10,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlin.String
+import kotlin.math.round
 
 private const val REDIS_PAYMENT_QUEUE = "payment_main_queue"
 private const val REDIS_PAYMENTS_DEFAULT_KEY = "payments_default"
@@ -40,7 +41,7 @@ class PaymentProcessorServiceImpl : PaymentProcessorService {
 
     override suspend fun enqueuePayment(correlationId: String, amount: Float) {
         val currentMoment = Clock.System.now()
-        val payment = Payment(correlationId, amount, currentMoment)
+        val payment = Payment(correlationId, (round(amount * 100.0)).toInt(), currentMoment)
         this.redis.lpush(REDIS_PAYMENT_QUEUE, payment.encode())
     }
 
@@ -73,11 +74,11 @@ private fun PaymentProcessor.toRedisKey(): String {
 }
 
 private fun List<Payment>.toPaymentProcessorSummary(): PaymentProcessorSummary {
-    return PaymentProcessorSummary(this.count(), this.map { it.amount }.sum())
+    return PaymentProcessorSummary(this.count(), round(this.sumOf { it.amount } / 100.0).toFloat())
 }
 
 private fun ProcessPayment.toPayment(): Payment {
-    return Payment(this.correlationId, this.amount, this.requestedAt)
+    return Payment(this.correlationId, round(this.amount * 100).toInt(), this.requestedAt)
 }
 
 private fun Payment.encode(): String {

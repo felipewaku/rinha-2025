@@ -16,13 +16,12 @@ fun Application.configureFrameworks() {
         slf4jLogger()
         modules(module {
             single<RedisClient> {
-                RedisClient.create("redis://0.0.0.0:6379/0")
+                RedisClient.create(environment.config.property("redis.url").getString())
             }
             single<StatefulRedisConnection<String, String>> {
                 get<RedisClient>().connect()
             }
             singleOf(::PaymentProcessorServiceImpl) bind PaymentProcessorService::class
-
         })
     }
 

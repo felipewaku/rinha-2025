@@ -35,3 +35,17 @@ kotlin {
 application {
     mainClass.set("dev.felipewaku.rinha2025.worker.MainKt")
 }
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "dev.felipewaku.rinha2025.worker.MainKt"
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    configurations.compileClasspath.get().forEach {
+        from(if (it.isDirectory) it else zipTree(it))
+    }
+}

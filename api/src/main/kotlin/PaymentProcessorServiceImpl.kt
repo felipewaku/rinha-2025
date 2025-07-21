@@ -74,7 +74,7 @@ private fun PaymentProcessor.toRedisKey(): String {
 }
 
 private fun List<Payment>.toPaymentProcessorSummary(): PaymentProcessorSummary {
-    return PaymentProcessorSummary(this.count(), round(this.sumOf { it.amount } / 100.0).toFloat())
+    return PaymentProcessorSummary(this.count(), (this.sumOf { it.amount } / 100.0).toFloat())
 }
 
 private fun ProcessPayment.toPayment(): Payment {

@@ -26,7 +26,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
+          cpus: '0.1'
           memory: '30MB'
 
   loadbalancer:
@@ -44,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
-          memory: '40MB'
+          cpus: '0.1'
+          memory: '20MB'
 
   api1:
     <<: *api-template
@@ -79,8 +79,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: '80MB'
+          cpus: '0.5'
+          memory: '100MB'
 
 networks:
   payment-processor:

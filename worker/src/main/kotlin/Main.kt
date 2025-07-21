@@ -61,7 +61,7 @@ suspend fun main() {
     while (true) {
         val payment = redis.lpop(REDIS_PAYMENT_QUEUE)
         if (payment == null) {
-            logger.info("No payments in queue, waiting 500ms...")
+//            logger.info("No payments in queue, waiting 500ms...")
             Thread.sleep(500)
             continue
         }
@@ -72,20 +72,22 @@ suspend fun main() {
         val response: HttpResponse = client.post(paymentUrl) {
             contentType(ContentType.Application.Json)
             setBody(
-                Json.encodeToString(PaymentRequestBody(
-                    paymentData.correlationId,
-                    round(paymentData.amount.toFloat() / 100.0).toFloat(),
-                    paymentData.requestedAt
-                ))
+                Json.encodeToString(
+                    PaymentRequestBody(
+                        paymentData.correlationId,
+                        (paymentData.amount.toFloat() / 100.0).toFloat(),
+                        paymentData.requestedAt
+                    )
+                )
             )
         }
 
         if (response.status != HttpStatusCode.OK) {
-            logger.info("Error in payment: ${paymentData.correlationId} with DEFAULT")
+//            logger.info("Error in payment: ${paymentData.correlationId} with DEFAULT")
             redis.lpush(REDIS_PAYMENT_QUEUE, payment)
             continue
         } else {
-            logger.info("Integrated payment ${paymentData.correlationId} with DEFAULT")
+//            logger.info("Integrated payment ${paymentData.correlationId} with DEFAULT")
 
             val date = Instant.parse(paymentData.requestedAt)
 

@@ -2,6 +2,7 @@
 val koin_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
+val ktor_version: String by project
 
 plugins {
     kotlin("jvm") version "2.1.10"
@@ -22,6 +23,8 @@ repositories {
 }
 
 dependencies {
+    implementation("io.ktor:ktor-client-core:${ktor_version}")
+    implementation("io.ktor:ktor-client-cio:${ktor_version}")
     implementation("io.netty:netty-resolver-dns-native-macos:4.1.107.Final:osx-aarch_64")
     implementation("io.micrometer:micrometer-core:1.15.1")
     implementation("io.lettuce:lettuce-core:6.7.0.RELEASE")

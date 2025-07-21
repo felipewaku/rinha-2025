@@ -21,9 +21,9 @@ fun Application.configureRouting() {
 
     routing {
         post("/payments") {
+            call.respondNullable(HttpStatusCode.OK)
             val body = call.receive<PaymentsRequestBody>()
             service.enqueuePayment(body.correlationId, body.amount)
-            call.respondNullable(HttpStatusCode.OK)
         }
 
         post("/payments/process") {

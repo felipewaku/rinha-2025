@@ -6,3 +6,6 @@ ktor:
         port: $PORT:8080
 redis:
     url: "$REDIS_URL:redis://0.0.0.0:6379/0"
+paymentProcessor:
+    default: "$PAYMENT_PROCESSOR_DEFAULT_BASE_URL:http://0.0.0.0:8001"
+    fallback: "$PAYMENT_PROCESSOR_FALLBACK_BASE_URL:http://0.0.0.0:8002"

@@ -23,8 +23,10 @@ repositories {
 }
 
 dependencies {
+    implementation("io.jooby:jooby-kotlin:3.11.0")
     implementation("io.ktor:ktor-client-core:${ktor_version}")
     implementation("io.ktor:ktor-client-cio:${ktor_version}")
+    implementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
     implementation("io.netty:netty-resolver-dns-native-macos:4.1.107.Final:osx-aarch_64")
     implementation("io.micrometer:micrometer-core:1.15.1")
     implementation("io.lettuce:lettuce-core:6.7.0.RELEASE")

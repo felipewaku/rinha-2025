@@ -12,9 +12,9 @@ import kotlinx.serialization.json.Json
 import kotlin.String
 import kotlin.math.round
 
-private const val REDIS_PAYMENT_QUEUE = "payment_main_queue"
-private const val REDIS_PAYMENTS_DEFAULT_KEY = "payments_default"
-private const val REDIS_PAYMENTS_FALLBACK_KEY = "payments_fallback"
+const val REDIS_PAYMENT_QUEUE = "payment_main_queue"
+const val REDIS_PAYMENTS_DEFAULT_KEY = "payments_default"
+const val REDIS_PAYMENTS_FALLBACK_KEY = "payments_fallback"
 
 @OptIn(ExperimentalLettuceCoroutinesApi::class)
 class PaymentProcessorServiceImpl : PaymentProcessorService {

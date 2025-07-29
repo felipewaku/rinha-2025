@@ -1,11 +1,6 @@
 x-service-templates:
   api-template: &api-template
     build: ./api
-    environment:
-      - PORT=8080
-      - REDIS_URL=redis://redis:6379/0
-      - PAYMENT_PROCESSOR_DEFAULT_BASE_URL=http://payment-processor-default:8080
-      - PAYMENT_PROCESSOR_FALLBACK_BASE_URL=http://payment-processor-fallback:8080
     networks:
       - backend
       - payment-processor
@@ -30,7 +25,7 @@ services:
       resources:
         limits:
           cpus: '0.2'
-          memory: '40MB'
+          memory: '30MB'
 
   loadbalancer:
     image: nginx:1.29.0-alpine
@@ -53,20 +48,34 @@ services:
   api1:
     <<: *api-template
     container_name: api1
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379/0
+      - PAYMENT_PROCESSOR_DEFAULT_BASE_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_BASE_URL=http://payment-processor-fallback:8080
+      - ENABLE_SYNC=true
+      - ENABLE_HEALTH=false
     deploy:
       resources:
         limits:
           cpus: '0.6'
-          memory: '150MB'
+          memory: '160MB'
 
   api2:
     <<: *api-template
     container_name: api2
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379/0
+      - PAYMENT_PROCESSOR_DEFAULT_BASE_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_BASE_URL=http://payment-processor-fallback:8080
+      - ENABLE_SYNC=false
+      - ENABLE_HEALTH=true
     deploy:
       resources:
         limits:
           cpus: '0.6'
-          memory: '150MB'
+          memory: '160MB'
 
 networks:
   payment-processor:

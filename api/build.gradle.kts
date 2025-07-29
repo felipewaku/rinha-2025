@@ -14,7 +14,7 @@ group = "dev.felipewaku.rinha2025"
 version = "0.0.1"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass = "io.ktor.server.cio.EngineMain"
 }
 
 repositories {
@@ -24,24 +24,22 @@ repositories {
 
 dependencies {
     implementation("io.jooby:jooby-kotlin:3.11.0")
-    implementation("io.ktor:ktor-client-core:${ktor_version}")
-    implementation("io.ktor:ktor-client-cio:${ktor_version}")
-    implementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.netty:netty-resolver-dns-native-macos:4.1.107.Final:osx-aarch_64")
     implementation("io.micrometer:micrometer-core:1.15.1")
     implementation("io.lettuce:lettuce-core:6.7.0.RELEASE")
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.ktor:ktor-server-content-negotiation")
-    implementation("io.ktor:ktor-server-core")
-    implementation("io.github.flaxoos:ktor-server-task-scheduling-core:2.2.1")
-    implementation("io.github.flaxoos:ktor-server-task-scheduling-redis:2.2.1")
-    implementation("io.github.flaxoos:ktor-server-task-scheduling-mongodb:2.2.1")
-    implementation("io.github.flaxoos:ktor-server-task-scheduling-jdbc:2.2.1")
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-cio:$ktor_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.8.1")
     implementation("io.ktor:ktor-server-resources")
     implementation("io.ktor:ktor-server-request-validation")
-    implementation("io.ktor:ktor-server-netty")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-server-config-yaml")
     testImplementation("io.ktor:ktor-server-test-host")

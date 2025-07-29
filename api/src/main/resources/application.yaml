@@ -9,3 +9,5 @@ redis:
 paymentProcessor:
     default: "$PAYMENT_PROCESSOR_DEFAULT_BASE_URL:http://0.0.0.0:8001"
     fallback: "$PAYMENT_PROCESSOR_FALLBACK_BASE_URL:http://0.0.0.0:8002"
+enable_sync: "$ENABLE_SYNC:true"
+enable_health: "$ENABLE_HEALTH:true"

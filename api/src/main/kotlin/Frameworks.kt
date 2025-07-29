@@ -16,7 +16,8 @@ fun Application.configureFrameworks() {
         slf4jLogger()
         modules(module {
             single<RedisClient> {
-                RedisClient.create(environment.config.property("redis.url").getString())
+                val redisUrl = System.getenv("REDIS_URL") ?: "redis://0.0.0.0:6379/0"
+                RedisClient.create(redisUrl)
             }
             single<StatefulRedisConnection<String, String>> {
                 get<RedisClient>().connect()

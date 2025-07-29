@@ -39,14 +39,12 @@ private data class PaymentRequestBody(
 @OptIn(ExperimentalLettuceCoroutinesApi::class, ExperimentalTime::class)
 fun Application.configureSyncJob() {
 
-    val enableSync = environment.config.property("enable_sync").getString() == "true"
+    val enableSync = (System.getenv("ENABLE_SYNC") ?: "true") == "true"
 
     if (enableSync) {
 
-        val defaultBaseUrl = environment.config.property("paymentProcessor.default").getString()
-        val fallbackBaseUrl = environment.config.property("paymentProcessor.fallback").getString()
-
-
+        val defaultBaseUrl = System.getenv("PAYMENT_PROCESSOR_DEFAULT_BASE_URL") ?: "http://0.0.0.0:8001"
+        val fallbackBaseUrl = System.getenv("PAYMENT_PROCESSOR_FALLBACK_BASE_URL") ?: "http://0.0.0.0:8002"
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -122,7 +120,8 @@ fun Application.configureSyncJob() {
                     val defaultPaymentUrl = "${defaultBaseUrl}/payments"
                     val fallbackPaymentUrl = "${fallbackBaseUrl}/payments"
 
-                    val paymentUrl = if (processor == PaymentProcessor.DEFAULT) defaultPaymentUrl else fallbackPaymentUrl
+                    val paymentUrl =
+                        if (processor == PaymentProcessor.DEFAULT) defaultPaymentUrl else fallbackPaymentUrl
 
                     val response: HttpResponse = client.post(paymentUrl) {
                         contentType(ContentType.Application.Json)
@@ -144,7 +143,7 @@ fun Application.configureSyncJob() {
                         redis.lpush(REDIS_PAYMENT_QUEUE, payment)
                         continue
                     } else {
-                        logger.info("Integrated payment ${paymentData.correlationId} with $processor")
+//                        logger.info("Integrated payment ${paymentData.correlationId} with $processor")
 
                         val date = Instant.parse(paymentData.requestedAt)
                         val redisKey =

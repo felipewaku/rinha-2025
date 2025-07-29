@@ -22,14 +22,16 @@ data class HealthCheckResponse(
     val failing: Boolean, val minResponseTime: Int
 )
 
+const val HEALTH_DEFAULT_KEY = "default_health"
+const val HEALTH_FALLBACK_KEY = "fallback_health"
 
 @OptIn(ExperimentalLettuceCoroutinesApi::class)
 fun Application.configureHealthCheck() {
-    val enableSync = environment.config.property("enable_sync").getString() == "true"
+    val enableHealth = (System.getenv("ENABLE_HEALTH") ?: "true") == "true"
 
-    if (enableSync) {
-        val defaultBaseUrl = environment.config.property("paymentProcessor.default").getString()
-        val fallbackBaseUrl = environment.config.property("paymentProcessor.fallback").getString()
+    if (enableHealth) {
+        val defaultBaseUrl = System.getenv("PAYMENT_PROCESSOR_DEFAULT_BASE_URL") ?: "http://0.0.0.0:8001"
+        val fallbackBaseUrl = System.getenv("PAYMENT_PROCESSOR_FALLBACK_BASE_URL") ?: "http://0.0.0.0:8002"
 
         CoroutineScope(Dispatchers.IO).launch {
             val connection by inject<StatefulRedisConnection<String, String>>()
@@ -46,7 +48,7 @@ fun Application.configureHealthCheck() {
                     val default = client.get(defaultHealthUrl).bodyAsText()
                     val fallback = client.get(fallbackHealthUrl).bodyAsText()
 
-                    logger.info("HealthCheck Default: $default // Fallback $fallback")
+//                    logger.info("HealthCheck Default: $default // Fallback $fallback")
 
                     redis.set(HEALTH_DEFAULT_KEY, default)
                     redis.set(HEALTH_FALLBACK_KEY, fallback)

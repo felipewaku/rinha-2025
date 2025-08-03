@@ -1,6 +1,6 @@
 x-service-templates:
   api-template: &api-template
-    build: ./api
+    build: .
     networks:
       - backend
       - payment-processor

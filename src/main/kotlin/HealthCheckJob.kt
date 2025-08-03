@@ -30,25 +30,16 @@ fun Application.configureHealthCheck() {
     val enableHealth = (System.getenv("ENABLE_HEALTH") ?: "true") == "true"
 
     if (enableHealth) {
-        val defaultBaseUrl = System.getenv("PAYMENT_PROCESSOR_DEFAULT_BASE_URL") ?: "http://0.0.0.0:8001"
-        val fallbackBaseUrl = System.getenv("PAYMENT_PROCESSOR_FALLBACK_BASE_URL") ?: "http://0.0.0.0:8002"
 
         CoroutineScope(Dispatchers.IO).launch {
             val connection by inject<StatefulRedisConnection<String, String>>()
             val redis = connection.coroutines()
             val logger = Logger.getLogger("HealthCheck")
 
-            val defaultHealthUrl = "${defaultBaseUrl}/payments/service-health"
-            val fallbackHealthUrl = "${fallbackBaseUrl}/payments/service-health"
-
-            val client = HttpClient(CIO)
-
             while (true) {
                 try {
-                    val default = client.get(defaultHealthUrl).bodyAsText()
-                    val fallback = client.get(fallbackHealthUrl).bodyAsText()
-
-//                    logger.info("HealthCheck Default: $default // Fallback $fallback")
+                    val default = PaymentProcessorClient.default.getHealthStatus()
+                    val fallback = PaymentProcessorClient.fallback.getHealthStatus()
 
                     redis.set(HEALTH_DEFAULT_KEY, default)
                     redis.set(HEALTH_FALLBACK_KEY, fallback)

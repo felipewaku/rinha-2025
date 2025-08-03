@@ -25,16 +25,6 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 
-@Serializable
-private data class PaymentData(
-    val correlationId: String, val amount: Int, val requestedAt: String
-)
-
-@Serializable
-private data class PaymentRequestBody(
-    val correlationId: String, val amount: Float, val requestedAt: String
-)
-
 
 @OptIn(ExperimentalLettuceCoroutinesApi::class, ExperimentalTime::class)
 fun Application.configureSyncJob() {

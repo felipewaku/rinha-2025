@@ -2,12 +2,6 @@ package dev.felipewaku.rinha2025
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.application.Application
 import io.lettuce.core.ExperimentalLettuceCoroutinesApi
 import io.lettuce.core.api.coroutines
@@ -27,10 +21,6 @@ fun Application.configureSyncJob() {
     val enableSync = (System.getenv("ENABLE_SYNC") ?: "true") == "true"
 
     if (enableSync) {
-
-        val defaultBaseUrl = System.getenv("PAYMENT_PROCESSOR_DEFAULT_BASE_URL") ?: "http://0.0.0.0:8001"
-        val fallbackBaseUrl = System.getenv("PAYMENT_PROCESSOR_FALLBACK_BASE_URL") ?: "http://0.0.0.0:8002"
-
 
         CoroutineScope(Dispatchers.IO).launch {
             val logger = Logger.getLogger("Worker")
@@ -101,26 +91,12 @@ fun Application.configureSyncJob() {
                         continue
                     }
 
-                    val defaultPaymentUrl = "${defaultBaseUrl}/payments"
-                    val fallbackPaymentUrl = "${fallbackBaseUrl}/payments"
+                    val client =
+                        if (processor == PaymentProcessor.DEFAULT) PaymentProcessorClient.default else PaymentProcessorClient.fallback
 
-                    val paymentUrl =
-                        if (processor == PaymentProcessor.DEFAULT) defaultPaymentUrl else fallbackPaymentUrl
+                    val isOk = client.processPayment(paymentData)
 
-                    val response: HttpResponse = client.post(paymentUrl) {
-                        contentType(ContentType.Application.Json)
-                        setBody(
-                            Json.encodeToString(
-                                PaymentRequestBody(
-                                    paymentData.correlationId,
-                                    (paymentData.amount.toFloat() / 100.0).toFloat(),
-                                    paymentData.requestedAt
-                                )
-                            )
-                        )
-                    }
-
-                    if (response.status != HttpStatusCode.OK) {
+                    if (isOk) {
 //            logger.info("Error in payment: ${paymentData.correlationId} with DEFAULT")
                         val key = if (processor == PaymentProcessor.DEFAULT) HEALTH_DEFAULT_KEY else HEALTH_FALLBACK_KEY
                         redis.set(key, Json.encodeToString(HealthCheckResponse(true, 0)))

@@ -11,37 +11,34 @@ import io.ktor.server.routing.routing
 import io.ktor.server.routing.post
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import org.koin.ktor.ext.inject
 
 
 fun Application.configureRouting() {
     install(Resources)
 
-    val service by inject<PaymentProcessorService>()
-
     routing {
         post("/payments") {
             call.respondNullable(HttpStatusCode.OK)
             val body = call.receive<PaymentsRequestBody>()
-            service.enqueuePayment(body.correlationId, body.amount)
+            PaymentProcessorService.instance.enqueuePayment(body.correlationId, body.amount)
         }
 
         post("/payments/process") {
             val body = call.receive<ProcessPaymentsRequestBody>()
             val date = Instant.parse(body.requestedAt)
-            service.processPayment(ProcessPayment(body.correlationId, body.amount, date, body.paymentProcessor))
+            PaymentProcessorService.instance.processPayment(ProcessPayment(body.correlationId, body.amount, date, body.paymentProcessor))
             call.respondNullable(HttpStatusCode.Created)
         }
 
         get<GetPaymentsSummary> { params ->
             val fromDate = safeParseInstant(params.from)
             val toDate = safeParseInstant(params.to)
-            val summary = service.getPaymentSummary(fromDate, toDate)
+            val summary = PaymentProcessorService.instance.getPaymentSummary(fromDate, toDate)
             call.respond(summary)
         }
 
         get<GetPayments> {
-            val payments = service.listPayments()
+            val payments = PaymentProcessorService.instance.listPayments()
             call.respond(payments)
         }
     }

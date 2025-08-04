@@ -1,5 +1,4 @@
 
-val koin_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val ktor_version: String by project
@@ -35,8 +34,6 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation")
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-cio:$ktor_version")
-    implementation("io.insert-koin:koin-ktor:$koin_version")
-    implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.8.1")
     implementation("io.ktor:ktor-server-resources")

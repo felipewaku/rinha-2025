@@ -4,6 +4,14 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 interface PaymentProcessorService {
+
+    companion object {
+        val instance: PaymentProcessorService
+            get() {
+                return PaymentProcessorServiceImpl(RedisConnectionProvider.connection)
+            }
+    }
+
     suspend fun getPaymentSummary(from: Instant?, to: Instant?): PaymentsSummary
     suspend fun enqueuePayment(correlationId: String, amount: Float)
     suspend fun processPayment(payment: ProcessPayment)

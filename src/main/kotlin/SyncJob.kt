@@ -10,20 +10,15 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.application.Application
 import io.lettuce.core.ExperimentalLettuceCoroutinesApi
-import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.coroutines
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.koin.ktor.ext.inject
 import java.util.logging.Logger
-import kotlin.getValue
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-
 
 
 @OptIn(ExperimentalLettuceCoroutinesApi::class, ExperimentalTime::class)
@@ -38,11 +33,10 @@ fun Application.configureSyncJob() {
 
 
         CoroutineScope(Dispatchers.IO).launch {
-            val connection by inject<StatefulRedisConnection<String, String>>()
             val logger = Logger.getLogger("Worker")
 
 
-            val redis = connection.coroutines()
+            val redis = RedisConnectionProvider.connection.coroutines()
 
             val client = HttpClient(CIO)
 

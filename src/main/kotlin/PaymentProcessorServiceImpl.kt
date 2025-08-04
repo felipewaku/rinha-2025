@@ -8,6 +8,8 @@ import io.lettuce.core.api.coroutines.RedisCoroutinesCommands
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlin.String
 import kotlin.math.round
@@ -41,7 +43,9 @@ class PaymentProcessorServiceImpl : PaymentProcessorService {
 
     override suspend fun enqueuePayment(correlationId: String, amount: Float) {
         val currentMoment = Clock.System.now()
-        val payment = Payment(correlationId, (round(amount * 100.0)).toInt(), currentMoment)
+        val milliseconds = currentMoment.toEpochMilliseconds()
+        val paymentMoment = Instant.fromEpochMilliseconds(milliseconds)
+        val payment = Payment(correlationId, (round(amount * 100.0)).toInt(), paymentMoment)
         this.redis.lpush(REDIS_PAYMENT_QUEUE, payment.encode())
     }
 
